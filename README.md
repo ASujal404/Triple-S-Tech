@@ -1,2 +1,2 @@
 # Triple-S-Tech
-Hackathon Project Meme generator
+Smart Agricultural Monitoring
