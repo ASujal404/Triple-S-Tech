@@ -3,47 +3,354 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Plant Disease Detector</title>
-    <style>
+    <title> Plant & Crop Disease Detector</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+
+  
+   <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             text-align: center;
             background: linear-gradient(to right, #4CAF50, #2E7D32);
             color: white;
-            padding: 20px;
         }
-        .logout-btn {
-            background: #d32f2f;
+
+     
+        #uploadContainer {
+            padding: 20px;
+            background: white;
+            display: inline-block;
+            border-radius: 10px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s;
+            margin-bottom: 20px;
+        }
+
+        #uploadContainer:hover {
+            transform: scale(1.05);
+        }
+
+        #imageInput {
+            display: none;
+        }
+
+        .custom-file-upload {
+            background-color: #388E3C;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .custom-file-upload:hover {
+            background-color: #1B5E20;
+        }
+
+      
+        #sensorData {
+            background: rgba(255, 255, 255, 0.9);
+            color: black;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            margin-top: 20px;
+        }
+
+       
+        #output {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        #output.show {
+            opacity: 1;
+        }
+
+   
+        #diseaseInfo {
+            margin-top: 20px;
+            background: white;
+            color: black;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            display: none;
+        }
+
+        #commonDiseases {
+            margin-top: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            color: black;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        #commonDiseases h3 {
+            color: #2E7D32;
+        }
+
+        .disease-card {
+            background: white;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        #chatbotContainer {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 300px;
+            background: white;
+            color: black;
+            border-radius: 10px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            display: none;
+        }
+
+        #chatMessages {
+            height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        #chatInput {
+            width: 80%;
+            padding: 5px;
+            border: none;
+            outline: none;
+        }
+
+        #sendBtn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        #chatIcon {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #4CAF50;
             color: white;
             padding: 10px;
-            border: none;
-            border-radius: 5px;
+            border-radius: 50%;
             cursor: pointer;
-            position: absolute;
-            top: 10px;
-            right: 10px;
         }
-        .logout-btn:hover {
-            background: #b71c1c;
-        }
+
+        .schemes-container {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin: 20px auto;
+    width: 80%;
+    text-align: center;
+    color: black;
+}
+
+.scheme-card {
+    background: #E8F5E9;
+    padding: 15px;
+    margin: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.scheme-card h3 {
+    color: #2E7D32;
+}
+
+.scheme-card a {
+    text-decoration: none;
+    color: #388E3C;
+    font-weight: bold;
+}
+.scheme-card a:hover {
+    color: #1B5E20;
+}
+
     </style>
 </head>
 <body>
-    <h2>🌱 AI Plant Disease Detector</h2>
-    <p>Welcome to the AI Plant Disease Detector! Upload an image to detect plant diseases.</p>
-    <button class="logout-btn" onclick="logout()">Logout</button>
+    <h2>🌱 Plant & Crop Disease Detector</h2>
+    
+  
+    <div id="uploadContainer">
+        <label for="imageInput" class="custom-file-upload">📷 Upload Plant/Crop Image</label>
+        <input type="file" id="imageInput" accept="image/*" multiple>
+    </div>
+    <div>
+        <div class="chat-header">🤖<a href="chatbot.html">Chatbot</a>   
+    </div>
+    
+    <div id="sensorData">
+        <h3>🌡️ Real-Time Environmental Data</h3>
+        <p>🌡️ Temperature: <span id="temperature">Fetching...</span>°C</p>
+        <p>💧 Humidity: <span id="humidity">Fetching...</span>%</p>
+        <p>🌱 Soil Moisture: <span id="moisture">Fetching...</span>%</p>
+    </div>
+    <canvas id="canvas" style="display: none;"></canvas>
+    <p id="output"></p>
 
+
+    <div id="diseaseInfo">
+        <h3>⚠️ Disease Information</h3>
+        <p id="diseaseDescription"></p>
+        <p id="diseaseCause"></p>
+        <p id="diseasePrevention"></p>
+    </div>
+
+     <div id="commonDiseases">
+        <h3>🌿 Common Plant Diseases</h3>
+        <div class="disease-card">
+            <h4>1️⃣ Powdery Mildew</h4>
+            <p><strong>Cause:</strong> Fungal spores in humid environments.</p>
+            <p><strong>Symptoms:</strong> White powdery spots on leaves.</p>
+            <p><strong>Prevention:</strong> Improve air circulation, use fungicides.</p>
+        </div>
+        <div class="disease-card">
+            <h4>2️⃣ Rust Disease</h4>
+            <p><strong>Cause:</strong> High humidity, wet leaves.</p>
+            <p><strong>Symptoms:</strong> Orange/red spots on leaves.</p>
+            <p><strong>Prevention:</strong> Avoid overhead watering, apply fungicide.</p>
+        </div>
+        <div class="disease-card">
+            <h4>3️⃣ Black Spot</h4>
+            <p><strong>Cause:</strong> Fungal infection in wet conditions.</p>
+            <p><strong>Symptoms:</strong> Black spots leading to leaf drop.</p>
+            <p><strong>Prevention:</strong> Remove infected leaves, improve drainage.</p>
+        </div>
+        <div class="disease-card">
+            <h4>4️⃣ Blight</h4>
+            <p><strong>Cause:</strong> Bacteria or fungus due to moisture.</p>
+            <p><strong>Symptoms:</strong> Rapid browning, leaf decay.</p>
+            <p><strong>Prevention:</strong> Use copper-based sprays, avoid excess water.</p>
+        </div>
+        <div class="disease-card">
+            <h4>5️⃣ Leaf Spot</h4>
+            <p><strong>Cause:</strong> Bacterial/fungal infection.</p>
+            <p><strong>Symptoms:</strong> Small brown/yellow spots on leaves.</p>
+            <p><strong>Prevention:</strong> Keep leaves dry, use organic fungicides.</p>
+        </div>
+    </div>
+    <div class="schemes-container">
+        <h2>🌾 Government Schemes for Farmers</h2>
+        
+        <div class="scheme-card">
+            <h3>PM-KISAN Yojana</h3>
+            <p>✅ Financial assistance of ₹6,000 per year to farmers.</p>
+            <a href="https://pmkisan.gov.in/" target="_blank">More Details</a>
+        </div>
+    
+        <div class="scheme-card">
+            <h3>PM Fasal Bima Yojana</h3>
+            <p>🌾 Crop insurance against natural calamities.</p>
+            <a href="https://pmfby.gov.in/" target="_blank">More Details</a>
+        </div>
+    
+        <div class="scheme-card">
+            <h3>Kisan Credit Card (KCC)</h3>
+            <p>💰 Easy loans for farmers at low interest rates.</p>
+            <a href="https://www.india.gov.in/kisan-credit-card-scheme" target="_blank">More Details</a>
+        </div>
+    
+        <div class="scheme-card">
+            <h3>Soil Health Card Scheme</h3>
+            <p>🧪 Helps farmers understand soil quality & nutrients.</p>
+            <a href="https://soilhealth.dac.gov.in/" target="_blank">More Details</a>
+        </div>
+    </div>
+    
     <script>
-        if (!localStorage.getItem("loggedIn")) {
-            alert("❌ You must log in first!");
-            window.location.href = "login.html";
+        async function loadModel() {
+            return await mobilenet.load();
         }
 
-        function logout() {
-            localStorage.removeItem("loggedIn");
-            alert("✅ Logged out successfully!");
-            window.location.href = "login.html";
+        document.getElementById('imageInput').addEventListener('change', async function(event) {
+            const files = event.target.files;
+            if (!files.length) return;
+
+            for (let file of files) {
+                const reader = new FileReader();
+                reader.onload = async function() {
+                    const img = new Image();
+                    img.src = reader.result;
+                    img.onload = async function() {
+                        const canvas = document.getElementById('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.drawImage(img, 0, 0);
+
+                        document.getElementById('output').innerText = "🔍 Analyzing Image...";
+                        document.getElementById('output').classList.add("show");
+
+                        const model = await loadModel();
+                        const predictions = await model.classify(img);
+
+                        const diseaseName = predictions[0].className;
+                        document.getElementById('output').innerText = "✅ Detected: " + diseaseName;
+                    };
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function fetchSensorData() {
+            document.getElementById('temperature').innerText = (20 + Math.random() * 10).toFixed(1);
+            document.getElementById('humidity').innerText = (50 + Math.random() * 30).toFixed(1);
+            document.getElementById('moisture').innerText = (20 + Math.random() * 40).toFixed(1);
         }
+        setInterval(fetchSensorData, 5000);
+        fetchSensorData();
+
+        document.getElementById('chatIcon').addEventListener('click', function() {
+            document.getElementById('chatbotContainer').style.display = 'block';
+        });
+
+        document.getElementById('sendBtn').addEventListener('click', function() {
+            const msg = document.getElementById('chatInput').value;
+            if (msg) {
+                document.getElementById('chatMessages').innerHTML += `<p><b>You:</b> ${msg}</p>`;
+                document.getElementById('chatMessages').innerHTML += `<p><b>Bot:</b> Answer coming soon...</p>`;
+                document.getElementById('chatInput').value = '';
+            }
+        });
+        const responses = {
+            "how to prevent fungal infections?": "Ensure proper air circulation, avoid overhead watering, and use organic fungicides like neem oil.",
+            "best fertilizer for tomatoes?": "Tomatoes thrive with balanced fertilizers like 10-10-10 NPK or composted manure.",
+            "how to increase soil fertility?": "Use organic compost, crop rotation, and avoid chemical overuse to enhance soil health.",
+            "common wheat diseases?": "Rust, powdery mildew, and smut are common wheat diseases. Proper irrigation and fungicides help control them.",
+            "how to control pests naturally?": "Introduce beneficial insects like ladybugs, use neem oil, and plant pest-repelling crops like marigolds."
+        };
+    
+        document.getElementById('sendBtn').addEventListener('click', function() {
+            const userMessage = document.getElementById('chatInput').value.toLowerCase();
+            const chatMessages = document.getElementById('chatMessages');
+    
+            if (userMessage) {
+                chatMessages.innerHTML += `<p><b>You:</b> ${userMessage}</p>`;
+                
+                const botResponse = responses[userMessage] || "I'm not sure. Please ask something related to farming!";
+                chatMessages.innerHTML += `<p><b>Bot:</b> ${botResponse}</p>`;
+                
+                document.getElementById('chatInput').value = '';
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        });
     </script>
 </body>
+
 </html>
