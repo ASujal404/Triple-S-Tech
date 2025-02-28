@@ -1,0 +1,68 @@
+// List of funny memes for login page
+const funnyMemes = [
+    "https://i.imgflip.com/30b1gx.jpg", // Drake meme
+    "https://i.imgflip.com/26am.jpg",   // Distracted Boyfriend
+    "https://i.imgflip.com/1g8my4.jpg", // Expanding Brain
+    "https://i.imgflip.com/1bh8.jpg",   // One Does Not Simply
+    "https://i.imgflip.com/1e7ql7.jpg", // Surprised Pikachu
+    "https://i.imgflip.com/2fm6x.jpg",  // Gru Plan
+    "https://i.imgflip.com/4acd7j.png", // Galaxy Brain
+    "https://i.imgflip.com/4t0m5.jpg"   // Leonardo DiCaprio Cheers
+];
+
+// List of funny headings for randomness
+const funnyHeadings = [
+    "😂 Welcome to the Meme Universe!",
+    "🤣 Meme Lords Only!",
+    "😆 Log in for Unlimited Laughter!",
+    "😂 Ready to Become a Meme Creator?",
+    "😜 Let's Get Meme-ing!"
+];
+
+// List of funny subtexts
+const funnySubtexts = [
+    "\"Log in and let the meme magic begin!\"",
+    "\"Make memes, not war!\"",
+    "\"Because life without memes is boring!\"",
+    "\"Only legends make memes!\"",
+    "\"Where memes are born!\""
+];
+
+// Sound effects
+const loginSound = new Audio("static/sounds/meme-login.mp3");
+const bgMusic = new Audio("static/sounds/bg-music.mp3");
+bgMusic.loop = true; // Loop background music
+
+// Load a random meme, heading, and subtext on login page
+document.addEventListener("DOMContentLoaded", function () {
+    if (document.getElementById("login-meme")) {
+        document.getElementById("login-meme").src = funnyMemes[Math.floor(Math.random() * funnyMemes.length)];
+        document.getElementById("funny-heading").innerText = funnyHeadings[Math.floor(Math.random() * funnyHeadings.length)];
+        document.getElementById("funny-subtext").innerText = funnySubtexts[Math.floor(Math.random() * funnySubtexts.length)];
+    }
+});
+
+// Login function
+function login() {
+    let username = document.getElementById("username").value;
+    if (username.trim() !== "") {
+        loginSound.play(); // Play funny sound
+        localStorage.setItem("username", username);
+        setTimeout(() => {
+            window.location.href = "index.html";
+        }, 1500); // Wait for sound to finish before redirecting
+    } else {
+        alert("Please enter a valid username!");
+    }
+}
+
+// Toggle Background Music
+function toggleMusic() {
+    if (bgMusic.paused) {
+        bgMusic.play();
+        document.getElementById("music-btn").innerText = "🔊 Music On";
+    } else {
+        bgMusic.pause();
+        document.getElementById("music-btn").innerText = "🔇 Music Off";
+    }
+}
